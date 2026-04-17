@@ -1,95 +1,188 @@
 :root {
-  --bg: #0f1117;
-  --surface: #1a1d26;
-  --border: #2a2e3a;
-  --text: #e6e8ee;
-  --muted: #9aa1b2;
-  --accent: #5b8def;
+  --bg: #0b0e14;
+  --surface: #13161f;
+  --surface-2: #1c2030;
+  --border: #252a38;
+  --text: #dde2ef;
+  --muted: #7a8299;
+  --accent: #4f8ef7;
+  --accent-dim: #1e3560;
+  --green: #3ecf8e;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  margin: 0;
-  padding: 0;
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
   min-height: 100vh;
 }
 
+/* ── Header ── */
 .app-header {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--border);
   background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+}
+
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .app-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
 }
 
+.system-badge {
+  background: var(--green);
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Main ── */
 .app-main {
-  padding: 2rem;
-  max-width: 960px;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.placeholder {
-  padding: 2rem;
-  background: var(--surface);
-  border: 1px dashed var(--accent);
-  border-radius: 8px;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.placeholder h2 {
-  margin: 0 0 0.5rem;
-  color: var(--accent);
-}
-
-.placeholder p {
-  margin: 0;
-  color: var(--muted);
-}
-
-.module-status {
-  padding: 1.5rem;
+/* ── Panels ── */
+.panel {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
+  overflow: hidden;
 }
 
-.module-status h3 {
-  margin: 0 0 1rem;
-  font-size: 1rem;
-}
-
-.module-status ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.module-status li {
-  padding: 0.5rem 0;
+.panel-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 0.85rem 1.25rem;
+  background: var(--surface-2);
   border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* ── Fields ── */
+.field-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.field-row label {
+  font-size: 0.85rem;
   color: var(--muted);
-  font-family: monospace;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
   font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
 }
 
-.module-status li:last-child {
-  border-bottom: none;
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  border-color: var(--accent);
 }
 
-.app-footer {
-  padding: 1rem 2rem;
-  border-top: 1px solid var(--border);
-  text-align: center;
+select option { background: var(--surface-2); }
+
+/* ── Button ── */
+.btn-primary {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover { opacity: 0.85; }
+
+/* ── Output ── */
+.muted { color: var(--muted); font-size: 0.875rem; }
+
+.result-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.result-item strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.result-item span {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.result-item.highlight span { color: var(--green); font-weight: 700; }
+
+.result-explanation {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Footer ── */
+.app-footer {
+  text-align: center;
+  padding: 1.25rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
 }

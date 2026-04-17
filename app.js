@@ -1,22 +1,50 @@
-import { storage } from "./modules/storage.js";
-import { client } from "./modules/client.js";
 import { classification } from "./modules/classification.js";
-import { diagnostics } from "./modules/diagnostics.js";
-import { report } from "./modules/report.js";
-import { planning } from "./modules/planning.js";
 
-const modules = { storage, client, classification, diagnostics, report, planning };
-
-function init() {
-  const list = document.getElementById("module-status-list");
-  if (!list) return;
-
-  for (const [name, mod] of Object.entries(modules)) {
-    const li = document.createElement("li");
-    const ready = typeof mod?.init === "function" ? mod.init() : "loaded";
-    li.textContent = `${name}: ${ready}`;
-    list.appendChild(li);
-  }
+function getInput() {
+  return {
+    goals: document.getElementById("input-goals").value.split(",").map((s) => s.trim()).filter(Boolean),
+    injuryStatus: document.getElementById("input-injury").value,
+    strength: document.getElementById("input-strength").value,
+    vo2max: parseFloat(document.getElementById("input-vo2").value) || null,
+    bodyComposition: { bodyFat: parseFloat(document.getElementById("input-bodyfat").value) || null },
+    movementLimitations: document.getElementById("input-limitations").value,
+  };
 }
 
-document.addEventListener("DOMContentLoaded", init);
+function renderDiagnostics(input) {
+  const el = document.getElementById("diagnostics-output");
+  const rows = [
+    ["Goals", input.goals.join(", ") || "—"],
+    ["Injury Status", input.injuryStatus],
+    ["Strength", input.strength],
+    ["VO2 Max", input.vo2max ?? "—"],
+    ["Body Fat %", input.bodyComposition.bodyFat ?? "—"],
+    ["Movement Limitations", input.movementLimitations],
+  ];
+  el.innerHTML = rows.map(([k, v]) => `
+    <div class="result-item">
+      <strong>${k}</strong><span>${v}</span>
+    </div>`).join("");
+}
+
+function renderReport(result) {
+  const el = document.getElementById("report-output");
+  el.innerHTML = `
+    <div class="result-item highlight">
+      <strong>Pathway</strong><span>${result.pathway}</span>
+    </div>
+    <div class="result-item highlight">
+      <strong>Phase</strong><span>${result.phase}</span>
+    </div>
+    <p class="result-explanation">${result.explanation}</p>
+  `;
+}
+
+function onClassify() {
+  const input = getInput();
+  renderDiagnostics(input);
+  const result = classification.classify(input);
+  renderReport(result);
+}
+
+document.getElementById("btn-classify").addEventListener("click", onClassify);

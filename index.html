@@ -7,24 +7,80 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
   <header class="app-header">
-    <h1>Performance Intelligence System</h1>
+    <div class="header-inner">
+      <h1>Performance Intelligence System</h1>
+      <span class="system-badge">NEW SYSTEM ACTIVE</span>
+    </div>
   </header>
 
   <main class="app-main">
-    <section id="scaffold-placeholder" class="placeholder">
-      <h2>New Scaffold Active</h2>
-      <p>Modules wired: storage, client, classification, diagnostics, report, planning.</p>
+
+    <section class="panel" id="section-client-input">
+      <h2 class="panel-title">Client Input</h2>
+      <div class="panel-body">
+        <div class="field-row">
+          <label for="input-goals">Goals</label>
+          <input id="input-goals" type="text" placeholder="e.g. fitness, sport, adl" />
+        </div>
+        <div class="field-row">
+          <label for="input-injury">Injury Status</label>
+          <select id="input-injury">
+            <option value="none">None</option>
+            <option value="acute">Acute</option>
+            <option value="subacute">Subacute</option>
+            <option value="chronic">Chronic</option>
+            <option value="cleared">Cleared</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label for="input-strength">Strength Level</label>
+          <select id="input-strength">
+            <option value="low">Low</option>
+            <option value="moderate">Moderate</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label for="input-vo2">VO2 Max</label>
+          <input id="input-vo2" type="number" placeholder="e.g. 42" min="10" max="90" />
+        </div>
+        <div class="field-row">
+          <label for="input-bodyfat">Body Fat %</label>
+          <input id="input-bodyfat" type="number" placeholder="e.g. 22" min="1" max="60" />
+        </div>
+        <div class="field-row">
+          <label for="input-limitations">Movement Limitations</label>
+          <select id="input-limitations">
+            <option value="none">None</option>
+            <option value="mild">Mild</option>
+            <option value="moderate">Moderate</option>
+            <option value="severe">Severe</option>
+          </select>
+        </div>
+        <button id="btn-classify" class="btn-primary">Run Classification</button>
+      </div>
     </section>
 
-    <section id="module-status" class="module-status">
-      <h3>Module Status</h3>
-      <ul id="module-status-list"></ul>
+    <section class="panel" id="section-diagnostics">
+      <h2 class="panel-title">Diagnostics</h2>
+      <div class="panel-body" id="diagnostics-output">
+        <p class="muted">No diagnostics run yet.</p>
+      </div>
     </section>
+
+    <section class="panel" id="section-report">
+      <h2 class="panel-title">Output / Report</h2>
+      <div class="panel-body" id="report-output">
+        <p class="muted">No report generated yet.</p>
+      </div>
+    </section>
+
   </main>
 
   <footer class="app-footer">
-    <small>PIS Scaffold</small>
+    <small>Performance Intelligence System</small>
   </footer>
 
   <script type="module" src="app.js"></script>
