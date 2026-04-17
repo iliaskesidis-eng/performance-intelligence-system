@@ -20,20 +20,59 @@
     <section class="panel" id="section-client-input">
       <h2 class="panel-title">Client Input</h2>
       <div class="panel-body">
+
         <div class="field-row">
           <label for="input-goals">Goals</label>
           <input id="input-goals" type="text" placeholder="e.g. fitness, sport, adl" />
         </div>
+
+        <div class="field-group-header">Injury</div>
+
         <div class="field-row">
-          <label for="input-injury">Injury Status</label>
-          <select id="input-injury">
-            <option value="none">None</option>
-            <option value="acute">Acute</option>
-            <option value="subacute">Subacute</option>
-            <option value="chronic">Chronic</option>
-            <option value="cleared">Cleared</option>
+          <label for="input-injury-present">Injury Presence</label>
+          <select id="input-injury-present">
+            <option value="no">None</option>
+            <option value="yes">Yes</option>
           </select>
         </div>
+
+        <div id="injury-detail-fields" class="hidden">
+          <div class="field-row">
+            <label for="input-injury-stage">Stage</label>
+            <select id="input-injury-stage">
+              <option value="acute">Acute</option>
+              <option value="subacute">Subacute</option>
+              <option value="chronic">Chronic</option>
+              <option value="cleared">Cleared</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label for="input-injury-region">Region / Type</label>
+            <select id="input-injury-region">
+              <option value="Knee">Knee</option>
+              <option value="Shoulder">Shoulder</option>
+              <option value="Low back">Low back</option>
+              <option value="Hip">Hip</option>
+              <option value="Ankle">Ankle</option>
+              <option value="Hamstring">Hamstring</option>
+              <option value="Achilles">Achilles</option>
+              <option value="Groin">Groin</option>
+              <option value="Neck">Neck</option>
+              <option value="Elbow">Elbow</option>
+              <option value="Wrist/Hand">Wrist/Hand</option>
+              <option value="General/Multi-site">General / Multi-site</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label for="input-injury-notes">Injury Notes</label>
+          <input id="input-injury-notes" type="text" placeholder="Optional — history, mechanism, context" />
+        </div>
+
+        <div class="field-group-header">Physical Profile</div>
+
         <div class="field-row">
           <label for="input-strength">Strength Level</label>
           <select id="input-strength">
@@ -59,6 +98,7 @@
             <option value="severe">Severe</option>
           </select>
         </div>
+
         <button id="btn-classify" class="btn-primary">Run Classification</button>
       </div>
     </section>
