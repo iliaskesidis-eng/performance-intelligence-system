@@ -1,11 +1,30 @@
 import { classification } from "./modules/classification.js";
 import { report } from "./modules/report.js";
 
+const injuryPresentEl = () => document.getElementById("input-injury-present");
+const injuryDetailEl  = () => document.getElementById("injury-detail-fields");
+
+function toggleInjuryDetail() {
+  const show = injuryPresentEl().value === "yes";
+  injuryDetailEl().classList.toggle("hidden", !show);
+}
+
 function getInput() {
+  const present = injuryPresentEl().value === "yes";
+  const stage   = document.getElementById("input-injury-stage").value;
+  const region  = document.getElementById("input-injury-region").value;
+  const notes   = document.getElementById("input-injury-notes").value.trim();
+
   return {
     goals: document.getElementById("input-goals").value
       .split(",").map((s) => s.trim()).filter(Boolean),
-    injuryStatus: document.getElementById("input-injury").value,
+    injury: {
+      present,
+      stage:  present ? stage  : null,
+      region: present ? region : null,
+      notes,
+    },
+    injuryStatus: present ? stage : "none",
     strength: document.getElementById("input-strength").value,
     vo2max: parseFloat(document.getElementById("input-vo2").value) || null,
     bodyComposition: {
@@ -17,14 +36,29 @@ function getInput() {
 
 function renderDiagnostics(input) {
   const el = document.getElementById("diagnostics-output");
+  const { injury } = input;
+
+  const injuryRows = injury.present
+    ? [
+        ["Injury Presence", "Yes"],
+        ["Injury Stage",    injury.stage  || "—"],
+        ["Injury Region",   injury.region || "—"],
+        ["Injury Notes",    injury.notes  || "None"],
+      ]
+    : [
+        ["Injury Presence", "None"],
+        ["Injury Notes",    injury.notes  || "None"],
+      ];
+
   const rows = [
     ["Goals", input.goals.join(", ") || "—"],
-    ["Injury Status", input.injuryStatus],
-    ["Strength Level", input.strength],
-    ["VO2 Max", input.vo2max != null ? input.vo2max : "Not provided"],
-    ["Body Fat %", input.bodyComposition.bodyFat != null ? input.bodyComposition.bodyFat + "%" : "Not provided"],
+    ...injuryRows,
+    ["Strength Level",       input.strength],
+    ["VO2 Max",              input.vo2max != null ? input.vo2max : "Not provided"],
+    ["Body Fat %",           input.bodyComposition.bodyFat != null ? input.bodyComposition.bodyFat + "%" : "Not provided"],
     ["Movement Limitations", input.movementLimitations],
   ];
+
   el.innerHTML = rows.map(([k, v]) => `
     <div class="result-item">
       <strong>${k}</strong><span>${v}</span>
@@ -74,8 +108,9 @@ function onClassify() {
   const input = getInput();
   renderDiagnostics(input);
   const classResult = classification.classify(input);
-  const reportData = report.build(input, classResult);
+  const reportData  = report.build(input, classResult);
   renderReport(reportData);
 }
 
+injuryPresentEl().addEventListener("change", toggleInjuryDetail);
 document.getElementById("btn-classify").addEventListener("click", onClassify);
