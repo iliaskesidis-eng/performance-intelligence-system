@@ -24,7 +24,6 @@ function getInput() {
       region: present ? region : null,
       notes,
     },
-    injuryStatus: present ? stage : "none",
     strength: document.getElementById("input-strength").value,
     vo2max: parseFloat(document.getElementById("input-vo2").value) || null,
     bodyComposition: {
@@ -93,11 +92,31 @@ function renderReport(data) {
       ? `<p class="report-missing">Missing data — not assessed: ${data.limiters.missing.join(", ")}.</p>`
       : "");
 
+  const injuryHtml = data.injury.present
+    ? [
+        `<div class="result-item"><strong>Injury Presence</strong><span>Yes</span></div>`,
+        `<div class="result-item"><strong>Stage</strong><span>${data.injury.stage || "—"}</span></div>`,
+        `<div class="result-item"><strong>Region / Type</strong><span>${data.injury.region || "—"}</span></div>`,
+        data.injury.notes
+          ? `<div class="result-item"><strong>Notes</strong><span>${data.injury.notes}</span></div>`
+          : "",
+      ].join("")
+    : `<div class="result-item"><strong>Injury Presence</strong><span>None</span></div>` +
+      (data.injury.notes
+        ? `<div class="result-item"><strong>Notes</strong><span>${data.injury.notes}</span></div>`
+        : "");
+
+  const constraintsSection = data.constraints
+    ? section("Constraints &amp; Precautions", list(data.constraints))
+    : "";
+
   el.innerHTML = [
     section("Pathway Classification", classificationHtml),
     section("Current Phase", `<p class="report-phase-name">${data.currentPhase}</p>`),
     section("Why This Classification Was Chosen", `<p>${data.why}</p>`),
+    section("Injury Profile", injuryHtml),
     section("Primary Limiters", limitersHtml),
+    constraintsSection,
     section("Immediate Priorities", list(data.priorities)),
     section("Programming Direction", `<p>${data.programmingDirection}</p>`),
     section("Monitoring KPIs", list(data.kpis)),
