@@ -135,17 +135,34 @@ function bfCat(v) {
   return "low";
 }
 
+function resolveInjury(raw) {
+  const present = raw?.present ?? false;
+  return {
+    present,
+    stage:  present ? (raw?.stage  || "") : "",
+    region: present ? (raw?.region || "") : "",
+    notes:  raw?.notes || "",
+  };
+}
+
 function detectLimiters(input) {
   const limiters = [];
-  const missing = [];
+  const missing  = [];
+  const inj = resolveInjury(input.injury);
 
-  const injury = (input.injuryStatus || "none").toLowerCase();
-  if (injury === "acute")
-    limiters.push("Active acute injury — tissue healing is the primary constraint on loading");
-  else if (injury === "subacute")
-    limiters.push("Subacute injury — load tolerance is reduced and must be progressed carefully");
-  else if (injury === "chronic")
-    limiters.push("Chronic injury — recurrent restriction on training capacity and exercise selection");
+  if (inj.present) {
+    const regionLabel = inj.region || "unspecified region";
+    if (inj.stage === "acute")
+      limiters.push(`Active acute injury — ${regionLabel}: tissue healing is the primary constraint on all loading`);
+    else if (inj.stage === "subacute")
+      limiters.push(`Subacute injury — ${regionLabel}: load tolerance is reduced and must be progressed under clinical guidance`);
+    else if (inj.stage === "chronic")
+      limiters.push(`Chronic injury — ${regionLabel}: recurrent capacity restriction requiring ongoing load management`);
+    else if (inj.stage === "cleared")
+      limiters.push(`Cleared injury — ${regionLabel}: monitor for recurrence, especially under high load or fatigue`);
+  } else if (inj.notes) {
+    limiters.push(`Injury history noted: ${inj.notes} — monitor for recurrence and adjust loading accordingly`);
+  }
 
   if (input.strength === "low")
     limiters.push("Strength deficit — below threshold for safe progressive loading across major patterns");
@@ -173,18 +190,52 @@ function detectLimiters(input) {
   return { limiters, missing };
 }
 
+function buildConstraints(input) {
+  const inj = resolveInjury(input.injury);
+  if (!inj.present) return null;
+
+  const regionLabel = inj.region || "the injured region";
+  const constraints = [];
+
+  if (inj.stage === "acute") {
+    constraints.push(`No loading through ${regionLabel} until the acute phase resolves and pain-free ROM is confirmed`);
+    constraints.push("Avoid high-intensity and high-volume sessions — tissue healing takes priority over performance gains");
+    constraints.push("All exercise selection must avoid provoking the injured site");
+    constraints.push("Obtain or confirm medical clearance before commencing structured rehabilitation");
+  } else if (inj.stage === "subacute") {
+    constraints.push(`Progressive loading of ${regionLabel} only — no maximal effort or sport-specific demands yet`);
+    constraints.push("Load increases capped at 10% per week; regression criteria must be defined before starting");
+    constraints.push("Monitor pain response after each session — any increase above baseline NRS 2 is a regression signal");
+  } else if (inj.stage === "chronic") {
+    constraints.push(`${regionLabel} has ongoing capacity restrictions — load management is essential to prevent flare-up`);
+    constraints.push("Avoid movements that historically aggravate the injury without graded desensitisation strategy in place");
+    constraints.push("Track strength and movement asymmetries alongside pain and load tolerance metrics");
+  } else if (inj.stage === "cleared") {
+    constraints.push(`${regionLabel} is cleared — include injury-prevention work (prehab) as a standing programme component`);
+    constraints.push("Monitor for recurrence signals, particularly under high load, fatigue, or rapid volume increases");
+  }
+
+  if (inj.notes) constraints.push(`Clinical note: ${inj.notes}`);
+
+  return constraints.length ? constraints : null;
+}
+
 function buildWhy(input, result) {
-  const goals = input.goals?.length ? input.goals.join(", ") : "not specified";
-  const injury = (input.injuryStatus || "none").toLowerCase();
-  const strength = input.strength || "not assessed";
-  const lim = typeof input.movementLimitations === "string"
+  const goals  = input.goals?.length ? input.goals.join(", ") : "not specified";
+  const inj    = resolveInjury(input.injury);
+  const lim    = typeof input.movementLimitations === "string"
     ? input.movementLimitations
     : "not assessed";
 
-  const pathwayRationale =
-    result.pathway === "Athlete"
-      ? `Goals indicate a sport or performance context (${goals}), placing this client on the Athlete pathway.`
-      : `Goals and capacity indicators align with general health and function (${goals}), placing this client on the General Population pathway.`;
+  const injurySummary = inj.present
+    ? `${inj.stage || "unspecified stage"} injury (${inj.region || "unspecified region"})`
+    : inj.notes
+    ? `no active injury (history noted)`
+    : "no active injury";
+
+  const pathwayRationale = result.pathway === "Athlete"
+    ? `Goals indicate a sport or performance context (${goals}), placing this client on the Athlete pathway.`
+    : `Goals and capacity indicators align with general health and function (${goals}), placing this client on the General Population pathway.`;
 
   const reasonMatch = result.explanation.match(/Phase:.*?— (.+?)\./);
   const phaseRationale = reasonMatch
@@ -194,7 +245,7 @@ function buildWhy(input, result) {
   return (
     `${pathwayRationale} ` +
     `Phase assigned as "${result.phase}": ${phaseRationale} ` +
-    `Determining signals: injury status = ${injury}, strength = ${strength}, movement limitations = ${lim}.`
+    `Determining signals: ${injurySummary}, strength = ${input.strength || "not assessed"}, movement limitations = ${lim}.`
   );
 }
 
@@ -205,18 +256,21 @@ export const report = {
   },
 
   build(input, classificationResult) {
-    const phase = classificationResult.phase;
+    const phase   = classificationResult.phase;
     const content = PHASE_DATA[phase];
     const { limiters, missing } = detectLimiters(input);
+    const constraints = buildConstraints(input);
 
     return {
       pathwayClassification: classificationResult.pathway,
       currentPhase: phase,
       why: buildWhy(input, classificationResult),
+      injury: resolveInjury(input.injury),
       limiters: {
         detected: limiters.length ? limiters : ["No major limiters identified from available data."],
         missing,
       },
+      constraints,
       priorities: content.priorities,
       programmingDirection: content.programming,
       kpis: content.kpis,
