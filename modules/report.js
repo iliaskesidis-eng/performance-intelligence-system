@@ -1,3 +1,5 @@
+import { planning } from "./planning.js";
+
 const PHASE_DATA = {
   "ADL": {
     priorities: [
@@ -249,6 +251,53 @@ function buildWhy(input, result) {
   );
 }
 
+function renderPriorityItem(p) {
+  return (
+    `<strong>#${p.rank} — ${p.priority}</strong>` +
+    `<span style="display:block;font-size:0.8rem;color:var(--muted);margin-top:0.35rem;line-height:1.5"><em>Why: </em>${p.constraint}</span>` +
+    `<span style="display:block;font-size:0.82rem;color:var(--accent);margin-top:0.25rem;line-height:1.5"><em>Action: </em>${p.action}</span>`
+  );
+}
+
+function renderExerciseCategory(cat) {
+  const exList = cat.examples.map((e) => `<li>${e}</li>`).join("");
+  return (
+    `<div style="margin-bottom:0.85rem;padding:0.85rem;background:var(--surface-2);border:1px solid var(--border);border-radius:6px">` +
+    `<strong style="display:block;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);margin-bottom:0.4rem">${cat.category}</strong>` +
+    `<p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;line-height:1.5">${cat.rationale}</p>` +
+    `<ul class="report-list" style="margin-bottom:0.5rem">${exList}</ul>` +
+    `<p style="font-size:0.78rem;color:#c08a3a;background:#1f1608;border:1px solid #3a2a10;border-radius:4px;padding:0.4rem 0.65rem;margin-top:0.35rem">${cat.constraint}</p>` +
+    `</div>`
+  );
+}
+
+function assembleProgrammingBlock(plan) {
+  const directives = plan.programmingDirection
+    ? plan.programmingDirection.split(" | ").filter(Boolean)
+    : [];
+
+  const directivesHtml = directives.length
+    ? `<ul class="report-list">${directives.map((d) => `<li>${d}</li>`).join("")}</ul>`
+    : "";
+
+  const frameworkHtml = plan.exerciseSelectionFramework.length
+    ? `<h4 class="report-section-title" style="margin-top:1.25rem;margin-bottom:0.6rem">Exercise Selection Framework</h4>` +
+      plan.exerciseSelectionFramework.map(renderExerciseCategory).join("")
+    : "";
+
+  const criteriaHtml = plan.progressionCriteria.length
+    ? `<h4 class="report-section-title" style="margin-top:1.25rem;margin-bottom:0.5rem">Progression Criteria</h4>` +
+      `<ul class="report-list">${plan.progressionCriteria.map((c) => `<li>${c}</li>`).join("")}</ul>`
+    : "";
+
+  const regressionHtml = plan.regressionStopRules.length
+    ? `<h4 class="report-section-title" style="margin-top:1.25rem;margin-bottom:0.5rem">Regression / Stop Rules</h4>` +
+      `<ul class="report-list">${plan.regressionStopRules.map((r) => `<li>${r}</li>`).join("")}</ul>`
+    : "";
+
+  return directivesHtml + frameworkHtml + criteriaHtml + regressionHtml;
+}
+
 export const report = {
   name: "report",
   init() {
@@ -261,7 +310,7 @@ export const report = {
     const { limiters, missing } = detectLimiters(input);
     const constraints = buildConstraints(input);
 
-    return {
+    const reportData = {
       pathwayClassification: classificationResult.pathway,
       currentPhase: phase,
       why: buildWhy(input, classificationResult),
@@ -275,5 +324,15 @@ export const report = {
       programmingDirection: content.programming,
       kpis: content.kpis,
     };
+
+    const plan = planning.buildPlan(input, classificationResult, reportData);
+
+    if (plan.immediatePriorities.length) {
+      reportData.priorities = plan.immediatePriorities.map(renderPriorityItem);
+      reportData.programmingDirection = assembleProgrammingBlock(plan);
+      reportData.kpis = plan.monitoringKpis;
+    }
+
+    return reportData;
   },
 };
